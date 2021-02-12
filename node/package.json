@@ -1,0 +1,16 @@
+{
+	"name": "noderealmpractice",
+	"version": "1.0.0",
+	"description": "Sample Realm app to illustrate common practices",
+	"main": "index.js",
+	"scripts": {
+		"cleanStart": "CLEAN_REALM=true node index.js",
+		"start": "node index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Paolo Manna",
+	"license": "MIT",
+	"dependencies": {
+		"realm": "^10.2.0"
+	}
+}

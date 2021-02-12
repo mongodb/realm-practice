@@ -1,0 +1,9 @@
+rootProject.name = 'RealmRNPractice'
+include ':react-native-fs'
+project(':react-native-fs').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fs/android')
+include ':react-native-mo-fs'
+project(':react-native-mo-fs').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mo-fs/android')
+include ':react-native-mo-fs'
+project(':react-native-mo-fs').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mo-fs/android')
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
+include ':app'

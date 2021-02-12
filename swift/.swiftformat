@@ -1,0 +1,34 @@
+--allman false
+--binarygrouping none
+--closingparen balanced
+--commas inline
+--comments indent
+--decimalgrouping none
+--elseposition same-line
+--empty void
+--exponentcase lowercase
+--exponentgrouping disabled
+--fractiongrouping disabled
+--header ignore
+--hexgrouping none
+--hexliteralcase uppercase
+--ifdef outdent
+--importgrouping alphabetized
+--indent tabs
+--indentcase false
+--linebreaks lf
+--octalgrouping none
+--operatorfunc spaced
+--patternlet hoist
+--ranges spaced
+--self remove
+--semicolons inline
+--stripunusedargs closure-only
+--tabwidth 4
+--trimwhitespace nonblank-lines
+--wraparguments after-first
+--wrapcollections preserve
+
+--disable consecutiveSpaces
+--enable isEmpty
+
