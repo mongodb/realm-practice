@@ -11,7 +11,10 @@ import UIKit
 // Constants
 let partitionValue	= "<Partition Value>"
 let realmFolder		= "mongodb-realm"
-let appId			= "<Application ID>"
+let username		= ""
+let password		= ""
+let userAPIKey		= ""
+let appId			= "<Realm App ID>"
 
 let appConfig		= AppConfiguration(baseURL: nil, transport: nil, localAppName: nil,
              		                   localAppVersion: nil, defaultRequestTimeoutMS: 15000)
@@ -78,14 +81,24 @@ class ViewController: UIViewController {
 
 		log("Application started")
 		
-		app.syncManager.logLevel		= .trace
+		app.syncManager.logLevel		= .detail
 		
 		if let user = app.currentUser {
 			log("Skipped login, syncing…")
 			
 			openRealm(for: user)
 		} else {
-			app.login(credentials: .anonymous) { [weak self] result in
+			let credentials: Credentials!
+			
+			if !username.isEmpty {
+				credentials	= .emailPassword(email: username, password: password)
+			} else if !userAPIKey.isEmpty {
+				credentials	= .userAPIKey(userAPIKey)
+			} else {
+				credentials	= .anonymous
+			}
+			
+			app.login(credentials: credentials) { [weak self] result in
 				DispatchQueue.main.async {
 					switch result {
 					case let .success(user):

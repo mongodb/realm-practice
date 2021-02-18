@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -24,6 +24,9 @@ const appConfig = {
   timeout: 15000,
 };
 const partitionValue = '<Partition Value>';
+const username = '';
+const password = '';
+const userAPIKey = '';
 const app = new Realm.App(appConfig);
 
 let realm;
@@ -118,7 +121,7 @@ const RNApp = () => {
     let backupExists = await fs.exists(backupPath);
 
     if (backupExists) {
-      let backupRealm = await Realm.open({path: backupPath, readOnly: true});
+      let backupRealm = await Realm.open({ path: backupPath, readOnly: true });
 
       // This is highly dependent on the structure of the data to recover
       let backupObjects = backupRealm.objects('TestData');
@@ -173,6 +176,16 @@ const RNApp = () => {
         Realm.App.Sync.setLogLevel(app, 'detail');
 
         if (!user) {
+          let credentials;
+
+          if (username.length > 0) {
+            credentials = Realm.Credentials.emailPassword(username, password);
+          } else if (userAPIKey.length > 0) {
+            credentials = Realm.Credentials.userApiKey(userAPIKey);
+          } else {
+            credentials = Realm.Credentials.anonymous();
+          }
+
           user = await app.logIn(Realm.Credentials.anonymous());
         }
 
