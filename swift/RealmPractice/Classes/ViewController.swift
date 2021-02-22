@@ -36,6 +36,7 @@ class TestData: Object {
 
 class ViewController: UIViewController {
 	let dateFormatter	= ISO8601DateFormatter()
+	let numFormatter	= NumberFormatter()
 	var textView: UITextView!
 	var addButton: UIButton!
 	var realm: Realm?
@@ -53,6 +54,8 @@ class ViewController: UIViewController {
 		// Do any additional setup after loading the view.
 		dateFormatter.formatOptions	= [.withFullDate, .withFullTime]
 		dateFormatter.timeZone		= TimeZone(secondsFromGMT: 0)
+		
+		numFormatter.numberStyle	= .decimal
 		
 		view.backgroundColor	= .systemBackground
 		
@@ -190,6 +193,7 @@ class ViewController: UIViewController {
 		return FileManager.default.fileExists(atPath: userDirectoryURL.path)
 	}
 	
+	// This is used only for sync opening: for async, we attach to the AsyncOpenTask instead
 	func realmSetupProgress(for session: SyncSession?) {
 		guard let session = session else {
 			log("Invalid session for progress notification")
@@ -198,14 +202,22 @@ class ViewController: UIViewController {
 		}
 		
 		progressToken	= session.addProgressNotification(for: .download,
-		             	                                  mode: .forCurrentlyOutstandingWork) { [weak self] progress in
+		             	                                  mode: .reportIndefinitely) { [weak self] progress in
 			if progress.isTransferComplete {
+				self?.progressToken?.invalidate()
+				self?.progressToken	= nil
+				
 				DispatchQueue.main.async { [weak self] in
 					self?.log("Transfer finished")
 				}
 			} else {
 				DispatchQueue.main.async { [weak self] in
-					self?.log("Transferred \(progress.transferredBytes) of \(progress.transferrableBytes)…")
+					guard let self = self else { return }
+					
+					let transferredStr		= self.numFormatter.string(from: NSNumber(value: progress.transferredBytes))
+					let transferrableStr	= self.numFormatter.string(from: NSNumber(value: progress.transferrableBytes))
+					
+					self.log("Transferred \(transferredStr ?? "??") of \(transferrableStr ?? "??")…")
 				}
 			}
 		}
@@ -280,15 +292,13 @@ class ViewController: UIViewController {
 		
 		realmSetupClientReset()
 
-		Realm.asyncOpen(configuration: config,
-		                callbackQueue: DispatchQueue.main) { [weak self] result in
+		let task	= Realm.asyncOpen(configuration: config,
+		        	                  callbackQueue: DispatchQueue.main) { [weak self] result in
 			switch result {
 			case let .success(openRealm):
 				self?.realm = openRealm
 				
 				self?.log("Opened \(partitionValue) Realm (async)")
-				
-				self?.realmSetupProgress(for: openRealm.syncSession)
 				
 				self?.realmRestore()
 				self?.realmSetup()
@@ -296,6 +306,19 @@ class ViewController: UIViewController {
 			case let .failure(error):
 				self?.log("Error: \(error.localizedDescription)")
 				self?.realmCleanup(delete: false)
+			}
+		}
+		
+		task.addProgressNotification(queue: .main) { [weak self] progress in
+			if progress.isTransferComplete {
+				self?.log("Transfer finished")
+			} else {
+				guard let self = self else { return }
+				
+				let transferredStr		= self.numFormatter.string(from: NSNumber(value: progress.transferredBytes))
+				let transferrableStr	= self.numFormatter.string(from: NSNumber(value: progress.transferrableBytes))
+				
+				self.log("Transferred \(transferredStr ?? "??") of \(transferrableStr ?? "??")…")
 			}
 		}
 	}
