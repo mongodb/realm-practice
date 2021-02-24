@@ -10,7 +10,7 @@ const appConfig = {
   id: "<Application ID>",
   timeout: 15000,
 };
-const partitionValue = "<Partition Value>"
+const partitionValue = "<Partition Value>";
 const username = "";
 const password = "";
 const userAPIKey = "";
@@ -149,7 +149,7 @@ async function run() {
         credentials = Realm.Credentials.anonymous();
       }
 
-      user = await app.logIn(Realm.Credentials.anonymous());
+      user = await app.logIn(credentials);
     }
 
     logWithDate(`Logged in with the user: ${user.id}`);

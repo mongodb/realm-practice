@@ -7,4 +7,4 @@ These include (but are not limited to):
 - Use of `newRealmFileBehavior`  and `existingRealmFileBehavior` recommended policies
 - Progress listener
 - Handling of a client reset error, with code to recover objects added and/or updated client-side when Sync wasn't available
-
+- Custom logging function

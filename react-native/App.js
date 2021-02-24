@@ -186,7 +186,7 @@ const RNApp = () => {
             credentials = Realm.Credentials.anonymous();
           }
 
-          user = await app.logIn(Realm.Credentials.anonymous());
+          user = await app.logIn(credentials);
         }
 
         logWithDate(`Logged in with the user: ${user.id}`);

@@ -34,6 +34,10 @@ class TestData: Object {
 	}
 }
 
+func syncLog(level: SyncLogLevel, message: String) {
+	Logger.log("Sync: (\(level.rawValue)) \(message)")
+}
+
 class ViewController: UIViewController {
 	let dateFormatter	= ISO8601DateFormatter()
 	let numFormatter	= NumberFormatter()
@@ -84,8 +88,9 @@ class ViewController: UIViewController {
 
 		log("Application started")
 		
-		app.syncManager.logLevel		= .detail
-		
+		app.syncManager.logLevel	= .detail
+		app.syncManager.logger		= syncLog
+
 		if let user = app.currentUser {
 			log("Skipped login, syncing…")
 			

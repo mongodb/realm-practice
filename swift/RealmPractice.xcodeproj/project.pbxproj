@@ -14,6 +14,7 @@
 		D886396925C2CC070062D8A4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D886396625C2CC070062D8A4 /* SceneDelegate.swift */; };
 		D886396D25C2CCFE0062D8A4 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D886396C25C2CCFE0062D8A4 /* RealmSwift */; };
 		D886396F25C2CCFE0062D8A4 /* Realm in Frameworks */ = {isa = PBXBuildFile; productRef = D886396E25C2CCFE0062D8A4 /* Realm */; };
+		D892EF8725E647FD00DDE914 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D892EF8625E647FD00DDE914 /* Logger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		D886396425C2CC070062D8A4 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		D886396525C2CC070062D8A4 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D886396625C2CC070062D8A4 /* SceneDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		D892EF8625E647FD00DDE914 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +73,7 @@
 			children = (
 				D886396525C2CC070062D8A4 /* AppDelegate.swift */,
 				D886396625C2CC070062D8A4 /* SceneDelegate.swift */,
+				D892EF8625E647FD00DDE914 /* Logger.swift */,
 				D886396425C2CC070062D8A4 /* ViewController.swift */,
 			);
 			path = Classes;
@@ -177,6 +180,7 @@
 				D886396825C2CC070062D8A4 /* AppDelegate.swift in Sources */,
 				D886396725C2CC070062D8A4 /* ViewController.swift in Sources */,
 				D886396925C2CC070062D8A4 /* SceneDelegate.swift in Sources */,
+				D892EF8725E647FD00DDE914 /* Logger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
