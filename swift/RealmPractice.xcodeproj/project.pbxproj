@@ -18,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D808E16225E7A55A00B55914 /* RealmPractice.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RealmPractice.entitlements; sourceTree = "<group>"; };
 		D886394A25C2CBA90062D8A4 /* RealmPractice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RealmPractice.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D886395625C2CBAA0062D8A4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D886395925C2CBAA0062D8A4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -60,6 +61,7 @@
 		D886394C25C2CBA90062D8A4 /* RealmPractice */ = {
 			isa = PBXGroup;
 			children = (
+				D808E16225E7A55A00B55914 /* RealmPractice.entitlements */,
 				D886396325C2CC070062D8A4 /* Classes */,
 				D886395625C2CBAA0062D8A4 /* Assets.xcassets */,
 				D886395825C2CBAA0062D8A4 /* LaunchScreen.storyboard */,
@@ -319,6 +321,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RealmPractice/RealmPractice.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = F93BPQTL5D;
 				INFOPLIST_FILE = RealmPractice/Info.plist;
@@ -328,8 +331,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mongodb.RealmPractice;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Debug;
 		};
@@ -338,6 +342,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RealmPractice/RealmPractice.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = F93BPQTL5D;
 				INFOPLIST_FILE = RealmPractice/Info.plist;
@@ -347,8 +352,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mongodb.RealmPractice;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Release;
 		};

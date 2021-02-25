@@ -47,6 +47,7 @@ class ViewController: UIViewController {
 	var objects: Results<TestData>!
 	var notificationToken: NotificationToken?
 	var progressToken: SyncSession.ProgressNotificationToken?
+	var progressAmount = 0
 
 	func log(_ text: String) {
 		textView.text += "[\(dateFormatter.string(from: Date()))] - \(text)\n"
@@ -206,22 +207,26 @@ class ViewController: UIViewController {
 			return
 		}
 		
+		progressAmount	= 0
 		progressToken	= session.addProgressNotification(for: .download,
 		             	                                  mode: .reportIndefinitely) { [weak self] progress in
 			if progress.isTransferComplete {
 				self?.progressToken?.invalidate()
-				self?.progressToken	= nil
+				self?.progressToken		= nil
+				self?.progressAmount	= 0
 				
 				DispatchQueue.main.async { [weak self] in
 					self?.log("Transfer finished")
 				}
 			} else {
 				DispatchQueue.main.async { [weak self] in
-					guard let self = self else { return }
+					// This can be called multiple times for the same progress, so skip duplicates
+					guard let self = self, progress.transferredBytes > self.progressAmount else { return }
 					
 					let transferredStr		= self.numFormatter.string(from: NSNumber(value: progress.transferredBytes))
 					let transferrableStr	= self.numFormatter.string(from: NSNumber(value: progress.transferrableBytes))
 					
+					self.progressAmount		= progress.transferredBytes
 					self.log("Transferred \(transferredStr ?? "??") of \(transferrableStr ?? "??")…")
 				}
 			}
@@ -314,15 +319,18 @@ class ViewController: UIViewController {
 			}
 		}
 		
+		progressAmount	= 0
 		task.addProgressNotification(queue: .main) { [weak self] progress in
 			if progress.isTransferComplete {
+				self?.progressAmount	= 0
 				self?.log("Transfer finished")
 			} else {
-				guard let self = self else { return }
-				
+				guard let self = self, progress.transferredBytes > self.progressAmount else { return }
+
 				let transferredStr		= self.numFormatter.string(from: NSNumber(value: progress.transferredBytes))
 				let transferrableStr	= self.numFormatter.string(from: NSNumber(value: progress.transferrableBytes))
 				
+				self.progressAmount		= progress.transferredBytes
 				self.log("Transferred \(transferredStr ?? "??") of \(transferrableStr ?? "??")…")
 			}
 		}
