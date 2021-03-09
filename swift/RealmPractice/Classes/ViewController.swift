@@ -21,7 +21,6 @@ let appConfig		= AppConfiguration(baseURL: nil, transport: nil, localAppName: ni
 let app				= App(id: appId, configuration: appConfig)
 let documentsURL	= URL(fileURLWithPath: NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!)
 
-// NOTE: The class of the objects handled here is set at TestData, change it to the one in your app
 class TestData: Object {
 	@objc dynamic var _id = ObjectId.generate()
 	@objc dynamic var _partition: String = ""
@@ -33,6 +32,9 @@ class TestData: Object {
 		return "_id"
 	}
 }
+
+// NOTE: The class of the objects handled here is set at TestData, change it to the one in your app
+let objectClass	= TestData.self
 
 func syncLog(level: SyncLogLevel, message: String) {
 	Logger.log("Sync: (\(level.rawValue)) \(message)")
@@ -83,7 +85,7 @@ class ViewController: UIViewController {
 		addButton.autoresizingMask	= [.flexibleWidth, .flexibleTopMargin]
 		addButton.setTitle("Add Items", for: .normal)
 		addButton.setTitleColor(.blue, for: .normal)
-		addButton.addTarget(self, action: #selector(insertTestData), for: .touchUpInside)
+		addButton.addTarget(self, action: #selector(insertUpdateTestData), for: .touchUpInside)
 		
 		view.addSubview(addButton)
 
@@ -171,13 +173,13 @@ class ViewController: UIViewController {
 		// This part needs to be tailored for the specific realm we're restoring
 		// In a nutshell, we need to read all collections that may have been modified by the user
 		// and report all changes back to the fresh realm
-		let oldObjects	= backupRealm.objects(TestData.self)
+		let oldObjects	= backupRealm.objects(objectClass)
 		
 		do {
 			try realm.write {
 				// Reads all objects, and applies changes
 				for anObject in oldObjects {
-					realm.create(TestData.self, value: anObject, update: .modified)
+					realm.create(objectClass, value: anObject, update: .modified)
 				}
 			}
 			
@@ -355,7 +357,7 @@ class ViewController: UIViewController {
 		}
 		
 		// Access objects in the realm, sorted by _id so that the ordering is defined.
-		objects = realm.objects(TestData.self).sorted(byKeyPath: "_id")
+		objects = realm.objects(objectClass).sorted(byKeyPath: "_id")
 
 		guard objects != nil else {
 			log("Error: No objects found")
@@ -378,7 +380,7 @@ class ViewController: UIViewController {
 			}
 		}
 		
-		log("Number of objects obtained: \(objects.count)")
+		log("Number of \(objectClass) objects obtained: \(objects.count)")
 	}
 	
 	func realmCleanup(delete: Bool = false) {
@@ -442,16 +444,30 @@ class ViewController: UIViewController {
 		return docList
 	}
 	
-	@IBAction func insertTestData() {
+	@IBAction func insertUpdateTestData() {
 		do {
-			let documentList	= createDocumentList()
-			
-			try realm?.write { [weak self] in
-				self?.realm?.add(documentList, update: .modified)
+			if objects.isEmpty {
+				let documentList	= createDocumentList()
+				
+				try realm?.write { [weak self] in
+					self?.realm?.add(documentList, update: .modified)
+				}
+				log("Inserted: \(documentList.count) documents")
+			} else {
+				guard let localRealm = realm, let records = objects else { return }
+				
+				// Add new data to embedded array
+				try localRealm.write {
+					records.forEach {
+						$0.longInt.value!		-= 1
+						$0.mediumInt.value!		+= 1
+						$0.doubleValue.value!	*= 1.1
+					}
+				}
+				log("Updated: \(records.count) documents")
 			}
-			log("Inserted: \(documentList.count) documents")
 		} catch {
-			log("Error inserting: \(error.localizedDescription)")
+			log("Error inserting/updating: \(error.localizedDescription)")
 		}
 	}
 }
