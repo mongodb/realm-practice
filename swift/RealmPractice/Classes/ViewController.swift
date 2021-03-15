@@ -14,6 +14,7 @@ let realmFolder		= "mongodb-realm"
 let username		= ""
 let password		= ""
 let userAPIKey		= ""
+let customJWT		= ""
 let appId			= "<Realm App ID>"
 
 let appConfig		= AppConfiguration(baseURL: nil, transport: nil, localAppName: nil,
@@ -105,6 +106,8 @@ class ViewController: UIViewController {
 				credentials	= .emailPassword(email: username, password: password)
 			} else if !userAPIKey.isEmpty {
 				credentials	= .userAPIKey(userAPIKey)
+			} else if !customJWT.isEmpty {
+				credentials	= .jwt(token: customJWT)
 			} else {
 				credentials	= .anonymous
 			}
