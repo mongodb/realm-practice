@@ -1,0 +1,32 @@
+{
+  "name": "realm-electron-practice",
+  "version": "1.0.0",
+  "description": "Electron QuickStart Advanced Guide",
+  "main": "main.js",
+  "scripts": {
+    "lint": "./node_modules/.bin/eslint main.js renderer.js --fix",
+    "pretty": "./node_modules/.bin/prettier --write 'main.js' 'renderer.js'",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mongodb/realm-practice.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mongodb/realm-practice/issues"
+  },
+  "homepage": "https://github.com/mongodb/realm-practice#readme",
+  "devDependencies": {
+    "electron": "^11.3.0",
+    "eslint": "^7.21.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1"
+  },
+  "dependencies": {
+    "realm": "^10.2.0"
+  }
+}

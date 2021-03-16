@@ -8,3 +8,11 @@ These include (but are not limited to):
 - Progress listener
 - Handling of a client reset error, with code to recover objects added and/or updated client-side when Sync wasn't available
 - Custom logging function
+
+## To run this application
+- Create a MongoDB Realm application and enable Realm Sync
+- Replace the `"<Application ID>"` with your Realm app id in `index.js`
+- Replace the `"<Partition Value>"` with the partition you want to sync with in `index.js`
+- npm install
+- npm start
+

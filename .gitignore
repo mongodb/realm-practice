@@ -57,3 +57,7 @@ buck-out/
 
 # CocoaPods
 Pods
+
+# Realm
+mongodb-realm
+
