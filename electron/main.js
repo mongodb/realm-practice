@@ -2,10 +2,10 @@ const Realm = require('realm');
 const { RealmUtils, realmApp, logWithDate } = require('./realmUtils');
 const { app, BrowserWindow } = require('electron');
 
-const username = "";
-const password = "";
-const userAPIKey = "";
-const customJWT = "";
+const username = '';
+const password = '';
+const userAPIKey = '';
+const customJWT = '';
 
 function createWindow() {
   // create an electron browser window
@@ -31,7 +31,7 @@ app.whenReady().then(async () => {
 
   try {
     Realm.App.Sync.setLogger(realmApp, (level, message) => logWithDate(`(${level}) ${message}`));
-    Realm.App.Sync.setLogLevel(realmApp, "detail");
+    Realm.App.Sync.setLogLevel(realmApp, 'detail');
 
     if (!user) {
       let credentials;
@@ -58,10 +58,12 @@ app.whenReady().then(async () => {
 
       let objects = realmUtils.realm.objects('TestData');
 
-      logWithDate(`Got ${objects.length} objects`)
+      logWithDate(`Got ${objects.length} objects`);
 
       function listener(objects, changes) {
-        logWithDate(`Received ${changes.deletions.length} deleted, ${changes.insertions.length} inserted, ${changes.newModifications.length} updates`);
+        logWithDate(
+          `Received ${changes.deletions.length} deleted, ${changes.insertions.length} inserted, ${changes.newModifications.length} updates`
+        );
       }
 
       objects.addListener(listener);

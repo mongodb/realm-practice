@@ -26,10 +26,12 @@ async function run() {
     if (realmUtils.realm) {
       let objects = realmUtils.realm.objects('TestData');
 
-      logOnHTML(`Got ${objects.length} objects`)
+      logOnHTML(`Got ${objects.length} objects`);
 
       function listener(objects, changes) {
-        logOnHTML(`Received ${changes.deletions.length} deleted, ${changes.insertions.length} inserted, ${changes.newModifications.length} updates`);
+        logOnHTML(
+          `Received ${changes.deletions.length} deleted, ${changes.insertions.length} inserted, ${changes.newModifications.length} updates`
+        );
       }
 
       objects.addListener(listener);
