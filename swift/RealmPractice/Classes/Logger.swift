@@ -20,7 +20,7 @@ enum Logger {
 	static var callback: ((String) -> Void)?
 	static var createdObjects	= Set<String>()
 	static var erasedObjects	= Set<String>()
-
+	
 	static var logFile: URL? = {
 		let fm	= FileManager.default
 		
@@ -51,7 +51,7 @@ enum Logger {
 		
 		let timestamp = formatter.string(from: Date())
 		guard let data = ("[\(timestamp)]: " + message + "\n").data(using: String.Encoding.utf8) else { return }
-
+		
 		if FileManager.default.fileExists(atPath: logFile.path) {
 			if let fileHandle = try? FileHandle(forWritingTo: logFile) {
 				fileHandle.seekToEndOfFile()
@@ -63,13 +63,21 @@ enum Logger {
 		}
 	}
 	
-	static func log(_ message: String) {
-		if analyseTrace, message.starts(with: "Sync: (7)") {
-			// Analyse Trace messages
-			parseTrace(message: message)
-		} else {
-			fileOutput(message)
+	fileprivate static func logCallback(_ message: String) {
+		guard let logBack = callback else { return }
+		
+		DispatchQueue.main.async { logBack(message) }
+	}
+	
+	fileprivate static func format(dictionary: [String: Any]) -> String {
+		let keys		= dictionary.keys.sorted()
+		var compound	= ""
+		
+		for key in keys {
+			compound.append("\(key): \(dictionary[key] ?? 0) | ")
 		}
+		
+		return compound
 	}
 	
 	fileprivate static func parseTrace(message: String) {
@@ -81,7 +89,7 @@ enum Logger {
 			for line in messageLines {
 				let params	= line.components(separatedBy: " ").filter { !$0.isEmpty }
 				
-				if !(params.isEmpty || params[0].starts(with: "Sync")) {
+				if !(params.isEmpty || params[0].starts(with: "Connection[")) {
 					let command	= params[0]
 					
 					if knownCommands.contains(command) {
@@ -96,10 +104,14 @@ enum Logger {
 							let objectId	= params[1]
 							
 							if createdObjects.contains(objectId) {
-								if let count = warnings["Erase existing"] {
-									warnings["Erase existing"] = count + 1
+								// Format is `path=<Collection>[ObjectId{<id>}]`
+								let objectComponents	= objectId.components(separatedBy: CharacterSet(charactersIn: "=[]{}"))
+								let collectionName		= objectComponents[1]
+								
+								if let count = warnings["Erase existing \(collectionName)"] {
+									warnings["Erase existing \(collectionName)"] = count + 1
 								} else {
-									warnings["Erase existing"] = 1
+									warnings["Erase existing \(collectionName)"] = 1
 								}
 								createdObjects.remove(objectId)
 								erasedObjects.insert(objectId)
@@ -108,12 +120,18 @@ enum Logger {
 							let objectId	= params[1]
 							
 							if erasedObjects.contains(objectId) {
-								if let count = warnings["Re-creating erased"] {
-									warnings["Re-creating erased"] = count + 1
+								let objectComponents	= objectId.components(separatedBy: CharacterSet(charactersIn: "=[]{}"))
+								let collectionName		= objectComponents[1]
+								
+								if let count = warnings["Re-creating erased \(collectionName)"] {
+									warnings["Re-creating erased \(collectionName)"] = count + 1
 								} else {
-									warnings["Re-creating erased"] = 1
+									warnings["Re-creating erased \(collectionName)"] = 1
 								}
 								erasedObjects.remove(objectId)
+							} else if createdObjects.contains(objectId) {
+								// This is a serious error: trying to create an existing object
+								logCallback("Re-creating an existing ID: \(objectId)")
 							}
 							createdObjects.insert(objectId)
 						default:
@@ -123,28 +141,30 @@ enum Logger {
 				}
 			}
 			
-			if let logBack = callback {
-				DispatchQueue.main.async {
-					if !operations.isEmpty {
-						let keys		= operations.keys.sorted()
-						var compound	= ""
-						
-						for key in keys {
-							compound.append("\(key): \(operations[key] ?? 0) ")
-						}
-						
-						if verbose {
-							logBack(compound)
-						}
-						fileOutput(compound)
-					}
-					
-					if !warnings.isEmpty {
-						logBack("Warnings: \(warnings)")
-						fileOutput("\(warnings)")
-					}
+			if !operations.isEmpty {
+				let opString	= format(dictionary: operations)
+				
+				if verbose {
+					logCallback(opString)
 				}
+				fileOutput(opString)
 			}
+			
+			if !warnings.isEmpty {
+				let opString	= format(dictionary: warnings)
+				
+				logCallback("Warnings: \(opString)")
+				fileOutput(opString)
+			}
+		}
+	}
+	
+	static func log(level: UInt, message: String) {
+		if analyseTrace, level == 7 {
+			// Analyse Trace messages
+			parseTrace(message: message)
+		} else {
+			fileOutput("Sync: (\(level)) \(message)")
 		}
 	}
 }

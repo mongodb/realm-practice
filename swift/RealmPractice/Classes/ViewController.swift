@@ -38,7 +38,7 @@ class TestData: Object {
 let objectClass	= TestData.self
 
 func syncLog(level: SyncLogLevel, message: String) {
-	Logger.log("Sync: (\(level.rawValue)) \(message)")
+	Logger.log(level: level.rawValue, message: message)
 }
 
 class ViewController: UIViewController {
@@ -65,6 +65,9 @@ class ViewController: UIViewController {
 		
 		numFormatter.numberStyle	= .decimal
 		
+		Logger.analyseTrace		= true
+		Logger.callback			= log(_:)
+
 		view.backgroundColor	= .systemBackground
 		
 		var textFrame			= view.bounds

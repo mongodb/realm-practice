@@ -1,5 +1,5 @@
-const Realm = require("realm");
-const fs = require("fs");
+const Realm = require('realm');
+const fs = require('fs');
 
 const TestDataSchema = {
   name: 'TestData',
@@ -8,9 +8,9 @@ const TestDataSchema = {
     _partition: 'string',
     doubleValue: 'double?',
     longInt: 'int?',
-    mediumInt: 'int?'
+    mediumInt: 'int?',
   },
-  primaryKey: '_id'
+  primaryKey: '_id',
 };
 
 const homedir = require('os').homedir();
@@ -24,7 +24,6 @@ const appConfig = {
 const realmApp = new Realm.App(appConfig);
 const partitionValue = "<Partition Value>";
 
-
 function fileExistsSync(file) {
   try {
     fs.accessSync(file, fs.constants.R_OK | fs.constants.W_OK);
@@ -37,14 +36,12 @@ function fileExistsSync(file) {
 function logWithDate(message) {
   let date = new Date();
 
-  console.log(`[${date.toISOString()}] - ${message}`)
+  console.log(`[${date.toISOString()}] - ${message}`);
 }
 
 class RealmUtils {
-
   constructor(user, isLocal) {
     return (async () => {
-
       // All async code here
       this.realm = await this.openRealm(user, isLocal);
 
@@ -83,7 +80,9 @@ class RealmUtils {
   }
 
   async restoreRealm(newRealm) {
-    if (!newRealm) { return; }
+    if (!newRealm) {
+      return;
+    }
 
     let backupPath = newRealm.path + '~';
 
@@ -95,7 +94,7 @@ class RealmUtils {
       logWithDate(`Found ${backupObjects.length} objects in ${backupPath}, proceeding to merge…`);
 
       newRealm.beginTransaction();
-      backupObjects.forEach(element => {
+      backupObjects.forEach((element) => {
         newRealm.create('TestData', element, 'modified');
       });
       newRealm.commitTransaction();
@@ -111,7 +110,7 @@ class RealmUtils {
     try {
       const config = {
         schema: [TestDataSchema],
-        path: dbPath
+        path: dbPath,
       };
 
       if (isLocal) {
@@ -122,7 +121,7 @@ class RealmUtils {
           partitionValue: partitionValue,
           newRealmFileBehavior: { type: 'downloadBeforeOpen', timeOutBehavior: 'throwException' },
           existingRealmFileBehavior: { type: 'openImmediately', timeOutBehavior: 'openLocalRealm' },
-          error: this.errorSync
+          error: this.errorSync,
         };
       }
 
@@ -140,7 +139,11 @@ class RealmUtils {
       if (newRealm) {
         // Add a progress function
         if (newRealm.syncSession) {
-          newRealm.syncSession.addProgressNotification('download', 'reportIndefinitely', this.transferProgress);
+          newRealm.syncSession.addProgressNotification(
+            'download',
+            'reportIndefinitely',
+            this.transferProgress
+          );
         }
 
         // If a backup file exists, restore to the current realm, and delete file afterwards
