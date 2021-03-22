@@ -64,9 +64,6 @@ class ViewController: UIViewController {
 		dateFormatter.timeZone		= TimeZone(secondsFromGMT: 0)
 		
 		numFormatter.numberStyle	= .decimal
-		
-		Logger.analyseTrace		= true
-		Logger.callback			= log(_:)
 
 		view.backgroundColor	= .systemBackground
 		
@@ -95,6 +92,10 @@ class ViewController: UIViewController {
 
 		log("Application started")
 		
+		// Set these and logLevel to .trace to identify issues in the Sync process
+//		Logger.analyseTrace		= true
+//		Logger.callback			= log(_:)
+
 		app.syncManager.logLevel	= .detail
 		app.syncManager.logger		= syncLog
 

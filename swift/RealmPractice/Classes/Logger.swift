@@ -130,8 +130,11 @@ enum Logger {
 								}
 								erasedObjects.remove(objectId)
 							} else if createdObjects.contains(objectId) {
+								let errorMsg	= "ERROR: Re-creating an existing ID - \(objectId)"
+								
 								// This is a serious error: trying to create an existing object
-								logCallback("Re-creating an existing ID: \(objectId)")
+								logCallback(errorMsg)
+								fileOutput(errorMsg)
 							}
 							createdObjects.insert(objectId)
 						default:

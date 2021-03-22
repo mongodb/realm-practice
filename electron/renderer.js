@@ -19,11 +19,11 @@ function logOnHTML(message) {
 
 async function run() {
   try {
-    logOnHTML(`Opened LOCAL realm`);
-
     let realmUtils = await new RealmUtils(null, true);
 
     if (realmUtils.realm) {
+      logOnHTML(`Opened LOCAL realm at ${realmUtils.realm.path}`);
+
       let objects = realmUtils.realm.objects('TestData');
 
       logOnHTML(`Got ${objects.length} objects`);
