@@ -14,6 +14,8 @@ function createWindow() {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true
     },
   });
 
@@ -54,6 +56,8 @@ app.whenReady().then(async () => {
     let realmUtils = await new RealmUtils(user, false);
 
     if (realmUtils.realm) {
+      global.databasePath = realmUtils.realm.path;
+
       logWithDate(`Opened SYNC realm`);
 
       let objects = realmUtils.realm.objects('TestData');

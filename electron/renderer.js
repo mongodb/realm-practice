@@ -1,4 +1,5 @@
 const { RealmUtils } = require('./realmUtils');
+const { remote } = require('electron');
 
 function logOnHTML(message) {
   let date = new Date();
@@ -19,7 +20,8 @@ function logOnHTML(message) {
 
 async function run() {
   try {
-    let realmUtils = await new RealmUtils(null, true);
+    let databasePath = remote.getGlobal('databasePath');
+    let realmUtils = await new RealmUtils(databasePath, true);
 
     if (realmUtils.realm) {
       logOnHTML(`Opened LOCAL realm at ${realmUtils.realm.path}`);

@@ -13,10 +13,6 @@ const TestDataSchema = {
   primaryKey: '_id',
 };
 
-const homedir = require('os').homedir();
-// Define this common path in a convenient place, where it can be found by the renderer & main
-const dbPath = require('path').join(homedir, 'mongodb-realm', 'realmData.realm');
-
 const appConfig = {
   id: "<Application Id>",
   timeout: 15000,
@@ -110,11 +106,11 @@ class RealmUtils {
     try {
       const config = {
         schema: [TestDataSchema],
-        path: dbPath,
       };
 
       if (isLocal) {
         config.sync = true;
+        config.path = user;
       } else {
         config.sync = {
           user: user,
@@ -134,22 +130,22 @@ class RealmUtils {
         newRealm = await new Realm(config);
       } else {
         newRealm = await Realm.open(config);
-      }
 
-      if (newRealm) {
-        // Add a progress function
-        if (newRealm.syncSession) {
-          newRealm.syncSession.addProgressNotification(
-            'download',
-            'reportIndefinitely',
-            this.transferProgress
-          );
+        if (newRealm) {
+          // Add a progress function
+          if (newRealm.syncSession) {
+            newRealm.syncSession.addProgressNotification(
+              'download',
+              'reportIndefinitely',
+              this.transferProgress
+            );
+          }
+
+          // If a backup file exists, restore to the current realm, and delete file afterwards
+          await this.restoreRealm(newRealm);
+        } else {
+          logWithDate(`Can't open realm ${partitionValue}`);
         }
-
-        // If a backup file exists, restore to the current realm, and delete file afterwards
-        await this.restoreRealm(newRealm);
-      } else {
-        logWithDate(`Can't open realm ${partitionValue}`);
       }
     } catch (e) {
       console.error(e);
