@@ -10,7 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "react": "17.0.1",
+    "react": "^17.0.1",
     "react-native": "^0.64",
     "react-native-fs": "^2.16.6",
     "realm": "^10.3.0-rc.1"

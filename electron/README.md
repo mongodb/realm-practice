@@ -14,8 +14,12 @@ To sync changes to a remote realm, open a synced realm on the main process using
 
 ## To run this application
 - Create a MongoDB Realm application and enable Realm Sync
+- Get the Javascript models for the Data Models tab, and substitute the `TestDataSchema` in `realmUtils.js` (or create a module to import)
 - Replace the `"<Application ID>"` with your Realm app id in `realmUtils.js`
 - Replace the `"<Partition Value>"` with the partition you want to sync with in `realmUtils.js`
 - npm install
-- npm start
+- npm run start
 
+## NOTE
+
+Because of a [known issue](https://github.com/realm/realm-js/issues/3650) with Electron on the Windows platform, the version to use on the platform at this time must be at most 10.4.x, recent versions will fail
