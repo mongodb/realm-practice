@@ -16,3 +16,6 @@ These include (but are not limited to):
 - npm install
 - npm start
 
+## NOTE
+
+As of Realm JS SDK 10.3.0, Node.js version 15 isn't supported, please use at most version 14 (see [the Github issue](https://github.com/realm/realm-js/issues/3670))

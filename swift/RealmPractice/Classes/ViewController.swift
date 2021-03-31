@@ -16,6 +16,7 @@ let password		= ""
 let userAPIKey		= ""
 let customJWT		= ""
 let appId			= "<Realm App ID>"
+let asyncRealmNames	= "AsyncRealmNames"
 
 let appConfig		= AppConfiguration(baseURL: nil, transport: nil, localAppName: nil,
              		                   localAppVersion: nil, defaultRequestTimeoutMS: 15000)
@@ -198,14 +199,22 @@ class ViewController: UIViewController {
 	}
 	
 	func realmExists(for user: User) -> Bool {
-		if let realmFileURL	= user.configuration(partitionValue: partitionValue).fileURL {
-			return FileManager.default.fileExists(atPath: realmFileURL.path)
+		guard let realmFileURL	= user.configuration(partitionValue: partitionValue).fileURL else { return false }
+		
+		let realmFilePath	= realmFileURL.path
+		let ud				= UserDefaults.standard
+		
+		// If there's a file, check if it's been ever opened successfully
+		if FileManager.default.fileExists(atPath: realmFilePath) {
+			if let asyncOpenRealms = ud.dictionary(forKey: asyncRealmNames) {
+				return asyncOpenRealms[realmFilePath] != nil
+			}
+		} else if var asyncOpenRealms = ud.dictionary(forKey: asyncRealmNames) {
+			// If there's no file, we certainly need to open async, but also delete a possible old reference
+			asyncOpenRealms.removeValue(forKey: realmFileURL.path)
+			ud.setValue(asyncOpenRealms, forKey: asyncRealmNames)
 		}
-		
-		// Approximate substitute, just check if the user folder is around
-		let userDirectoryURL	= documentsURL.appendingPathComponent(realmFolder).appendingPathComponent(appId).appendingPathComponent(user.id)
-		
-		return FileManager.default.fileExists(atPath: userDirectoryURL.path)
+		return false
 	}
 	
 	// This is used only for sync opening: for async, we attach to the AsyncOpenTask instead
@@ -264,6 +273,11 @@ class ViewController: UIViewController {
 						
 						self.log("The database is out of sync, resetting client…")
 						
+						if var asyncOpenRealms	= UserDefaults.standard.dictionary(forKey: asyncRealmNames) {
+							asyncOpenRealms.removeValue(forKey: realmConfigURL.path)
+							UserDefaults.standard.setValue(asyncOpenRealms, forKey: asyncRealmNames)
+						}
+						
 						self.realmCleanup()
 						
 						// This clears the old realm files and makes a backup in `recovered-realms`
@@ -316,6 +330,14 @@ class ViewController: UIViewController {
 			switch result {
 			case let .success(openRealm):
 				self?.realm = openRealm
+				
+				// Async open completed successfully, store it in the prefs
+				if let realmFileURL = config.fileURL {
+					var asyncOpenRealms = UserDefaults.standard.dictionary(forKey: asyncRealmNames) ?? [String: Any]()
+					
+					asyncOpenRealms[realmFileURL.path]	= true
+					UserDefaults.standard.setValue(asyncOpenRealms, forKey: asyncRealmNames)
+				}
 				
 				self?.log("Opened \(partitionValue) Realm (async)")
 				
@@ -416,6 +438,13 @@ class ViewController: UIViewController {
 			// Deleting immediately doesn't work, introduce a small wait
 			DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
 				do {
+					if let realmFileURL = config.fileURL,
+					   var asyncOpenRealms	= UserDefaults.standard.dictionary(forKey: asyncRealmNames)
+					{
+						asyncOpenRealms.removeValue(forKey: realmFileURL.path)
+						UserDefaults.standard.setValue(asyncOpenRealms, forKey: asyncRealmNames)
+					}
+					
 					_	= try Realm.deleteFiles(for: config)
 					
 					self?.log("Deleted realm files")
