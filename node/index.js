@@ -5,46 +5,12 @@
 
 const Realm = require("realm");
 const fs = require("fs");
+const constants = require('./constants');
+const { fileExistsSync, logToFile, logWithDate } = require('./logger');
 
-const appConfig = {
-  id: "<Application ID>",
-  timeout: 15000,
-};
-const partitionValue = "<Partition Value>";
-const username = "";
-const password = "";
-const userAPIKey = "";
-const app = new Realm.App(appConfig);
+const app = new Realm.App(constants.appConfig);
 
 let realm;
-
-// This is just an example of object: gather them from the Data Model tab on the Realm UI Portal
-const TestDataSchema = {
-  name: 'TestData',
-  properties: {
-    _id: 'objectId',
-    _partition: 'string',
-    doubleValue: 'double?',
-    longInt: 'int?',
-    mediumInt: 'int?'
-  },
-  primaryKey: '_id'
-};
-
-function fileExistsSync(file) {
-  try {
-    fs.accessSync(file, fs.constants.R_OK | fs.constants.W_OK);
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
-function logWithDate(message) {
-  let date = new Date();
-
-  console.log(`[${date.toISOString()}] - ${message}`)
-}
 
 function errorSync(session, error) {
   if (realm != undefined) {
@@ -84,13 +50,13 @@ async function restoreRealm() {
   if (fileExistsSync(backupPath)) {
     let backupRealm = await Realm.open({ path: backupPath, readOnly: true });
     // This is highly dependent on the structure of the data to recover
-    let backupObjects = backupRealm.objects("TestData");
+    let backupObjects = backupRealm.objects(constants.schemaName);
 
-    logWithDate(`Found ${backupObjects.length} objects in ${backupPath}, proceeding to merge…`);
+    logWithDate(`Found ${backupObjects.length} ${constants.schemaName} objects in ${backupPath}, proceeding to merge…`);
 
     realm.beginTransaction();
     backupObjects.forEach(element => {
-      realm.create("TestData", element, 'modified');
+      realm.create(constants.schemaName, element, 'modified');
     });
     realm.commitTransaction();
 
@@ -102,10 +68,10 @@ async function restoreRealm() {
 async function openRealm(user) {
   try {
     const config = {
-      schema: [TestDataSchema],
+      schema: constants.schemaClasses,
       sync: {
         user: user,
-        partitionValue: partitionValue,
+        partitionValue: constants.partitionValue,
         newRealmFileBehavior: { type: 'downloadBeforeOpen', timeOutBehavior: 'throwException' },
         existingRealmFileBehavior: { type: 'openImmediately', timeOutBehavior: 'openLocalRealm' },
         error: errorSync
@@ -114,12 +80,12 @@ async function openRealm(user) {
 
     if (process.env.CLEAN_REALM) {
       Realm.deleteFile(config);
-      logWithDate(`Cleaned realm ${partitionValue}`);
+      logWithDate(`Cleaned realm ${constants.partitionValue}`);
     }
 
     realm = await Realm.open(config);
 
-    logWithDate(`Opened realm ${partitionValue}`);
+    logWithDate(`Opened realm ${constants.partitionValue}`);
 
     // Add a progress function
     realm.syncSession.addProgressNotification('download', 'reportIndefinitely', transferProgress);
@@ -135,16 +101,18 @@ async function run() {
   let user = app.currentUser;
 
   try {
-    Realm.App.Sync.setLogger(app, (level, message) => logWithDate(`(${level}) ${message}`));
+    Realm.App.Sync.setLogger(app, (level, message) => logToFile(`(${level}) ${message}`));
     Realm.App.Sync.setLogLevel(app, "detail");
 
-    if (!user) {
+    if (!user || !user.isLoggedIn) {
       let credentials;
 
-      if (username.length > 0) {
-        credentials = Realm.Credentials.emailPassword(username, password);
-      } else if (userAPIKey.length > 0) {
-        credentials = Realm.Credentials.userApiKey(userAPIKey);
+      if (constants.username.length > 0) {
+        credentials = Realm.Credentials.emailPassword(constants.username, constants.password);
+      } else if (constants.userAPIKey.length > 0) {
+        credentials = Realm.Credentials.userApiKey(constants.userAPIKey);
+      } else if (constants.customJWT.length > 0) {
+        credentials = Realm.Credentials.jwt(constants.customJWT);
       } else {
         credentials = Realm.Credentials.anonymous();
       }
@@ -157,9 +125,9 @@ async function run() {
     await openRealm(user);
 
     if (realm) {
-      let objects = realm.objects("TestData");
+      let objects = realm.objects(constants.schemaName);
 
-      logWithDate(`Got ${objects.length} objects`)
+      logWithDate(`Got ${objects.length} ${constants.schemaName} objects`)
 
       function listener(objects, changes) {
         logWithDate(`Received ${changes.deletions.length} deleted, ${changes.insertions.length} inserted, ${changes.newModifications.length} updates`);
