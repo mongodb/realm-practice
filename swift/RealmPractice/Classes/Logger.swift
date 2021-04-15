@@ -87,27 +87,27 @@ enum Logger {
 			let messageLines	= message.components(separatedBy: "\n")
 			
 			for line in messageLines {
-				let params	= line.components(separatedBy: " ").filter { !$0.isEmpty }
+				let params	= line.components(separatedBy: CharacterSet(charactersIn: " .,")).filter { !$0.isEmpty }
 				
 				if !(params.isEmpty || params[0].starts(with: "Connection[")) {
 					let command	= params[0]
-					
+
 					if knownCommands.contains(command) {
-						if let count = operations[command] {
-							operations[command] = count + 1
+						let objectId			= params.count > 1 ? params[1] : ""
+						// Format is `path=<Collection>[ObjectId{<id>}]`
+						let objectComponents	= objectId.components(separatedBy: CharacterSet(charactersIn: "=[]{}"))
+						let collectionName		= objectComponents.count > 1 ? objectComponents[1] : ""
+						let collCommand			= collectionName.isEmpty ? command : command + " - " + collectionName
+						
+						if let count = operations[collCommand] {
+							operations[collCommand] = count + 1
 						} else {
-							operations[command] = 1
+							operations[collCommand] = 1
 						}
 						
 						switch command {
 						case "EraseObject":
-							let objectId	= params[1]
-							
 							if createdObjects.contains(objectId) {
-								// Format is `path=<Collection>[ObjectId{<id>}]`
-								let objectComponents	= objectId.components(separatedBy: CharacterSet(charactersIn: "=[]{}"))
-								let collectionName		= objectComponents[1]
-								
 								if let count = warnings["Erase existing \(collectionName)"] {
 									warnings["Erase existing \(collectionName)"] = count + 1
 								} else {
@@ -116,13 +116,16 @@ enum Logger {
 								createdObjects.remove(objectId)
 								erasedObjects.insert(objectId)
 							}
-						case "CreateObject":
-							let objectId	= params[1]
-							
+						case "Update", "ArrayInsert":
 							if erasedObjects.contains(objectId) {
-								let objectComponents	= objectId.components(separatedBy: CharacterSet(charactersIn: "=[]{}"))
-								let collectionName		= objectComponents[1]
+								let errorMsg	= "ERROR: Modifying a deleted ID - \(objectId)"
 								
+								// This is a serious error: trying to update a deleted object
+								logCallback(errorMsg)
+								fileOutput(errorMsg)
+							}
+						case "CreateObject":
+							if erasedObjects.contains(objectId) {
 								if let count = warnings["Re-creating erased \(collectionName)"] {
 									warnings["Re-creating erased \(collectionName)"] = count + 1
 								} else {
