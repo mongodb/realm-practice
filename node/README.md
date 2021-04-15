@@ -11,8 +11,8 @@ These include (but are not limited to):
 
 ## To run this application
 - Create a MongoDB Realm application and enable Realm Sync
-- Replace the `"<Application ID>"` with your Realm app id in `index.js`
-- Replace the `"<Partition Value>"` with the partition you want to sync with in `index.js`
+- Replace the `"<Application ID>"` with your Realm app id in `constants.js`
+- Replace the `"<Partition Value>"` with the partition you want to sync with in `constants.js`
 - npm install
 - npm start
 

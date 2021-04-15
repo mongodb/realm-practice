@@ -11,9 +11,9 @@ These include (but are not limited to):
 
 ## To run this application
 - Create a MongoDB Realm application and enable Realm Sync
-- Get the Javascript models for the Data Models tab, and substitute the `TestDataSchema` in `App.js` (or create an external module)
-- Replace the `"<Application ID>"` with your Realm app id in `App.js`
-- Replace the `"<Partition Value>"` with the partition you want to sync with in `App.js`
+- Get the Javascript models for the Data Models tab, and substitute the `TestDataSchema` in `constants.js` (or create an external module)
+- Replace the `"<Application ID>"` with your Realm app id in `contants.js`
+- Replace the `"<Partition Value>"` with the partition you want to sync with in `constants.js`
 - npm install
 - npm run start
 - npm run ios (or npm android)
