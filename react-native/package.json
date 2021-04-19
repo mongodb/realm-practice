@@ -13,7 +13,7 @@
     "react": "^17.0.2",
     "react-native": "^0.64",
     "react-native-fs": "^2.17.0",
-    "realm": "^10.3.0"
+    "realm": "^10.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.13.15",

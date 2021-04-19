@@ -23,5 +23,5 @@ To sync changes to a remote realm, open a synced realm on the main process using
 ## NOTE
 
 - Because of a [known issue](https://github.com/realm/realm-js/issues/3650) with Electron on the Windows platform, the version to use on the platform at this time must be at most 10.4.x, recent versions will fail
-- As of Realm JS SDK 10.3.0, Node.js version 15 isn't supported, please use at most version 14 (see [the Github issue](https://github.com/realm/realm-js/issues/3670))
+- As of Realm JS SDK 10.3.0, Node.js version 15 isn't supported, please use at most version 14 (see [the Github issue](https://github.com/realm/realm-js/issues/3670)). The issue has been solved in version 10.4.0 of the SDK.
 

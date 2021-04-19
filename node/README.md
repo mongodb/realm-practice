@@ -18,4 +18,4 @@ These include (but are not limited to):
 
 ## NOTE
 
-As of Realm JS SDK 10.3.0, Node.js version 15 isn't supported, please use at most version 14 (see [the Github issue](https://github.com/realm/realm-js/issues/3670))
+As of Realm JS SDK 10.3.0, Node.js version 15 isn't supported, please use at most version 14 (see [the Github issue](https://github.com/realm/realm-js/issues/3670)). The issue has been solved in version 10.4.0 of the SDK.
