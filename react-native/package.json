@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "react": "^17.0.2",
-    "react-native": "^0.64",
+    "react-native": "^0.64.2",
     "react-native-fs": "^2.17.0",
-    "realm": "^10.4.0"
+    "realm": "^10.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.13.15",
