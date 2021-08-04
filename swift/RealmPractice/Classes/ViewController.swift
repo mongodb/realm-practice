@@ -26,9 +26,9 @@ let documentsURL	= URL(fileURLWithPath: NSSearchPathForDirectoriesInDomains(.doc
 class TestData: Object {
 	@objc dynamic var _id = ObjectId.generate()
 	@objc dynamic var _partition: String = ""
-	let doubleValue = RealmOptional<Double>()
-	let longInt = RealmOptional<Int>()
-	let mediumInt = RealmOptional<Int>()
+	let doubleValue = RealmProperty<Double?>()
+	let longInt = RealmProperty<Int?>()
+	let mediumInt = RealmProperty<Int?>()
 	
 	override static func primaryKey() -> String? {
 		return "_id"
