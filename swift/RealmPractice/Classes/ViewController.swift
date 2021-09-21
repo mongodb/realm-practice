@@ -254,42 +254,39 @@ class ViewController: UIViewController {
 		guard app.syncManager.errorHandler == nil else { return }
 		
 		app.syncManager.errorHandler	= { [weak self] error, session in
+			guard let self = self, let user = session?.parentUser() else { return }
+
 			let syncError	= error as! SyncError
 			var fileURL: URL?
-//			var fileURL		= self?.realm?.configuration.fileURL
 			
 			// Extract failing partition from the session, detect which fileURL we're going to backup
 			if let partition = session?.configuration()?.partitionValue as? String {
-				fileURL	= app.currentUser?.configuration(partitionValue: partition).fileURL
+				fileURL	= user.configuration(partitionValue: partition).fileURL
 			}
 			
 			switch syncError.code {
 			case .clientResetError:
-				if let (path, clientResetToken) = syncError.clientResetInfo() {
-					DispatchQueue.main.async { [weak self] in
-						guard let self = self, let realmConfigURL = fileURL else { return }
-						
-						self.log("The database is out of sync, resetting client…")
-						
-						if var asyncOpenRealms	= UserDefaults.standard.dictionary(forKey: asyncRealmNames) {
-							asyncOpenRealms.removeValue(forKey: realmConfigURL.path)
-							UserDefaults.standard.setValue(asyncOpenRealms, forKey: asyncRealmNames)
-						}
-						
-						self.realmCleanup()
-						
-						// This clears the old realm files and makes a backup in `recovered-realms`
-						SyncSession.immediatelyHandleError(clientResetToken, syncManager: app.syncManager)
-						
-						// Copy from the auto-generated backup to a known location
-						self.realmBackup(from: path, to: realmConfigURL)
-						
-						// At this point, realm is gone, so user can be advised to quit and re-enter app (or at least logout)
-						// Here we just retry to open the same realm again: YMMV
-						DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-							self?.log("Trying to re-open realm…")
-							self?.openRealm(for: app.currentUser!)
-						}
+				if let realmConfigURL = fileURL, let (path, clientResetToken) = syncError.clientResetInfo() {
+					self.log("The database is out of sync, resetting client…")
+					
+					if var asyncOpenRealms	= UserDefaults.standard.dictionary(forKey: asyncRealmNames) {
+						asyncOpenRealms.removeValue(forKey: realmConfigURL.path)
+						UserDefaults.standard.setValue(asyncOpenRealms, forKey: asyncRealmNames)
+					}
+					
+					self.realmCleanup()
+					
+					// This clears the old realm files and makes a backup in `recovered-realms`
+					SyncSession.immediatelyHandleError(clientResetToken, syncManager: app.syncManager)
+					
+					// Copy from the auto-generated backup to a known location
+					self.realmBackup(from: path, to: realmConfigURL)
+					
+					// At this point, realm is gone, so user can be advised to quit and re-enter app (or at least logout)
+					// Here we just retry to open the same realm again: YMMV
+					DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+						self?.log("Trying to re-open realm…")
+						self?.openRealm(for: user)
 					}
 				}
 			default:
