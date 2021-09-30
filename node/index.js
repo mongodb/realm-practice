@@ -93,7 +93,7 @@ async function openRealm(user) {
     // If a backup file exists, restore to the current realm, and delete file afterwards
     await restoreRealm();
   } catch (e) {
-    console.error(e);
+    console.error(`Open Error: ${JSON.stringify(e)}`);
   }
 }
 
@@ -136,7 +136,7 @@ async function run() {
       objects.addListener(listener);
     }
   } catch (error) {
-    console.error(error);
+    console.error(`Login Error: ${JSON.stringify(error)}`);
   } finally {
     setTimeout(() => {
       if (realm) {
@@ -151,4 +151,7 @@ async function run() {
   }
 }
 
-run().catch(console.dir);
+run().catch((reason) => {
+  console.error(`Promise exception: ${JSON.stringify(reason)}`);
+  app.currentUser.logOut();
+});

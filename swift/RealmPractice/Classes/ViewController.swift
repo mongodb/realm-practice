@@ -124,7 +124,7 @@ class ViewController: UIViewController {
 						
 						self?.openRealm(for: user)
 					case let .failure(error):
-						self?.log("Error: \(error.localizedDescription)")
+						self?.log("Login Error: \(error.localizedDescription)")
 					}
 				}
 			}
@@ -132,6 +132,18 @@ class ViewController: UIViewController {
 	}
 	
 	// MARK: - Realm operations
+	
+	fileprivate func logOutUser() {
+		app.currentUser?.logOut { error in
+			DispatchQueue.main.async { [weak self] in
+				if error != nil {
+					self?.log("Logout Error: \(error!.localizedDescription)")
+				} else {
+					self?.log("Logged out")
+				}
+			}
+		}
+	}
 	
 	fileprivate func realmBackup(from backupPath: String, to realmFileURL: URL) {
 		let backupURL	= realmFileURL.deletingPathExtension().appendingPathExtension("~realm")
@@ -289,8 +301,11 @@ class ViewController: UIViewController {
 						self?.openRealm(for: user)
 					}
 				}
+			case .clientUserError, .underlyingAuthError:
+				self.log("Authentication Error: \(syncError.localizedDescription)")
+				self.logOutUser()
 			default:
-				print("SyncManager error: ", error.localizedDescription)
+				print("SyncManager Error: ", error.localizedDescription)
 			}
 		}
 	}
@@ -310,7 +325,7 @@ class ViewController: UIViewController {
 			realmRestore()
 			realmSetup()
 		} catch {
-			log("Error: \(error.localizedDescription)")
+			log("Sync Open Error: \(error.localizedDescription)")
 			realmCleanup(delete: true)
 		}
 	}
@@ -340,7 +355,7 @@ class ViewController: UIViewController {
 				self?.realmSetup()
 				
 			case let .failure(error):
-				self?.log("Error: \(error.localizedDescription)")
+				self?.log("Async Open Error: \(error.localizedDescription)")
 				self?.realmCleanup(delete: false)
 			}
 		}
@@ -384,7 +399,7 @@ class ViewController: UIViewController {
 		objects = realm.objects(objectClass).sorted(byKeyPath: "_id")
 
 		guard objects != nil else {
-			log("Error: No objects found")
+			log("Query Error: No objects found")
 			
 			return
 		}
@@ -400,7 +415,7 @@ class ViewController: UIViewController {
 				self?.log("Received \(deletions.count) deleted, \(insertions.count) inserted, \(modifications.count) updates")
 			case let .error(error):
 				// An error occurred while opening the Realm file on the background worker thread
-				self?.log("Error: \(error.localizedDescription)")
+				self?.log("Observe Error: \(error.localizedDescription)")
 			}
 		}
 		
@@ -444,7 +459,7 @@ class ViewController: UIViewController {
 					
 					self?.log("Deleted realm files")
 				} catch {
-					self?.log("Error: \(error.localizedDescription)")
+					self?.log("Clear Realm Error: \(error.localizedDescription)")
 				}
 			}
 		}
