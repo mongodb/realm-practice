@@ -85,6 +85,20 @@ const RNApp = () => {
     }
   }
 
+  function compactOnLaunch(totalBytes, usedBytes) {
+    let tenMB = 10485760;
+
+    logWithDate(`Storage Realm: ${usedBytes} / ${totalBytes}`);
+
+    if ((totalBytes > tenMB) && ((usedBytes / totalBytes) < 0.75)) {
+      logWithDate(`Compacting Realm…`);
+      
+      return true;
+    }
+
+    return false;
+  }
+
   function transferProgress(transferred, transferables) {
     if (transferred < transferables) {
       logWithDate(`Transferred ${transferred} of ${transferables}`);
@@ -124,6 +138,7 @@ const RNApp = () => {
     try {
       const config = {
         schema: constants.schemaClasses,
+        shouldCompactOnLaunch: compactOnLaunch,
         sync: {
           user: user,
           partitionValue: constants.partitionValue,

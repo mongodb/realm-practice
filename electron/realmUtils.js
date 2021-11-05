@@ -67,6 +67,20 @@ class RealmUtils {
     }
   }
 
+  compactOnLaunch(totalBytes, usedBytes) {
+    let tenMB = 10485760;
+
+    logWithDate(`Storage Realm: ${usedBytes} / ${totalBytes}`);
+
+    if ((totalBytes > tenMB) && ((usedBytes / totalBytes) < 0.75)) {
+      logWithDate(`Compacting Realm…`);
+      
+      return true;
+    }
+
+    return false;
+  }
+
   transferProgress(transferred, transferables) {
     if (transferred < transferables) {
       logWithDate(`Transferred ${transferred} of ${transferables}`);
@@ -106,6 +120,7 @@ class RealmUtils {
     try {
       const config = {
         schema: [TestDataSchema],
+        shouldCompactOnLaunch: this.compactOnLaunch,
       };
 
       if (isLocal) {
