@@ -24,15 +24,11 @@ let app				= App(id: appId, configuration: appConfig)
 let documentsURL	= URL(fileURLWithPath: NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!)
 
 class TestData: Object {
-	@objc dynamic var _id = ObjectId.generate()
-	@objc dynamic var _partition: String = ""
-	let doubleValue = RealmProperty<Double?>()
-	let longInt = RealmProperty<Int?>()
-	let mediumInt = RealmProperty<Int?>()
-	
-	override static func primaryKey() -> String? {
-		return "_id"
-	}
+	@Persisted(primaryKey: true) var _id = ObjectId.generate()
+	@Persisted var _partition: String = ""
+	@Persisted var doubleValue: Double?
+	@Persisted var longInt: Int?
+	@Persisted var mediumInt: Int?
 }
 
 // NOTE: The class of the objects handled here is set at TestData, change it to the one in your app
@@ -99,7 +95,7 @@ class ViewController: UIViewController {
 		}
 
 		if let user = app.currentUser {
-			log("Skipped login, syncing…")
+			log("Skipped login, using \(user.id), syncing…")
 			
 			openRealm(for: user)
 		} else {
@@ -120,7 +116,7 @@ class ViewController: UIViewController {
 					switch result {
 					case let .success(user):
 						// This is the part that reads the objects via Sync
-						self?.log("Logged in, syncing…")
+						self?.log("Logged in \(user.id), syncing…")
 						
 						self?.openRealm(for: user)
 					case let .failure(error):
@@ -470,10 +466,10 @@ class ViewController: UIViewController {
 	fileprivate func createDocument() -> TestData {
 		let document	= TestData()
 		
-		document._partition			= partitionValue
-		document.doubleValue.value	= Double(arc4random_uniform(100000)) / 100.0
-		document.longInt.value		= Int(arc4random_uniform(1000000))
-		document.mediumInt.value	= Int(arc4random_uniform(1000))
+		document._partition		= partitionValue
+		document.doubleValue	= Double(arc4random_uniform(100000)) / 100.0
+		document.longInt		= Int(arc4random_uniform(1000000))
+		document.mediumInt		= Int(arc4random_uniform(1000))
 
 		return document
 	}
@@ -505,9 +501,9 @@ class ViewController: UIViewController {
 				// Add new data to embedded array
 				try localRealm.write {
 					records.forEach {
-						$0.longInt.value!		-= 1
-						$0.mediumInt.value!		+= 1
-						$0.doubleValue.value!	*= 1.1
+						$0.longInt!		-= 1
+						$0.mediumInt!	+= 1
+						$0.doubleValue!	*= 1.1
 					}
 				}
 				log("Updated: \(records.count) documents")
