@@ -27,3 +27,4 @@ exports.schemaClasses = [TestDataSchema];
 
 exports.LOG_TO_FILE = true;
 exports.TRACE_LOG = false;
+exports.MANUAL_CLIENT_RESET = true;	// This is the default, set to false to use "discardLocal"

@@ -5,6 +5,8 @@ exports.appConfig = {
 };
 
 exports.partitionValue = "<Partition Value>"
+exports.manualClientReset = true;	// This is the default, set to false to use "discardLocal"
+
 exports.username = "";
 exports.password = "";
 exports.userAPIKey = "";
@@ -23,4 +25,5 @@ exports.TestDataSchema = {
     },
     primaryKey: '_id'
 };
+
 exports.schemaClasses = [this.TestDataSchema];

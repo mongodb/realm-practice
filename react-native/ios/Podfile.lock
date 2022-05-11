@@ -340,10 +340,10 @@ PODS:
     - React-jsi (= 0.66.4)
     - React-logger (= 0.66.4)
     - React-perflogger (= 0.66.4)
-  - RealmJS (10.16.0):
+  - RealmJS (10.17.0):
     - GCDWebServer
     - React
-  - RNFS (2.19.0):
+  - RNFS (2.20.0):
     - React-Core
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
@@ -534,8 +534,8 @@ SPEC CHECKSUMS:
   React-RCTVibration: e3ffca672dd3772536cb844274094b0e2c31b187
   React-runtimeexecutor: dec32ee6f2e2a26e13e58152271535fadff5455a
   ReactCommon: 57b69f6383eafcbd7da625bfa6003810332313c4
-  RealmJS: 8a3478957315c29cdc0b3f958f2e370d22330b2d
-  RNFS: fc610f78fdf8bfc89a9e5cc2f898519f4dba1002
+  RealmJS: 1974bf10182364d33d7b2beb3442344806888995
+  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   Yoga: e7dc4e71caba6472ff48ad7d234389b91dadc280
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 

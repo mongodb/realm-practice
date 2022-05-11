@@ -20,6 +20,8 @@ const appConfig = {
 const realmApp = new Realm.App(appConfig);
 const partitionValue = "<Partition Value>";
 
+const manualClientReset = true;	// This is the default, set to false to use "discardLocal"
+
 function fileExistsSync(file) {
   try {
     fs.accessSync(file, fs.constants.R_OK | fs.constants.W_OK);
@@ -45,24 +47,29 @@ class RealmUtils {
     })();
   }
 
+  // General error handler: this will handle manual client reset,
+  // but is also needed if breaking changes are applied, as "discardLocal" won't be enough
   errorSync(session, error) {
     if (this.realm != undefined) {
-      if (error.name === 'ClientReset') {
-        const realmPath = this.realm.path;
+      switch (error.name) {
+        case 'ClientReset':
+          const realmPath = this.realm.path;
 
-        this.realm.close();
+          this.realm.close();
 
-        logWithDate(`Error ${error.message}, need to reset ${realmPath}…`);
-        Realm.App.Sync.initiateClientReset(realmApp, realmPath);
-        logWithDate(`Creating backup from ${error.config.path}…`);
+          logWithDate(`Error ${error.message}, need to reset ${realmPath}…`);
+          Realm.App.Sync.initiateClientReset(realmApp, realmPath);
+          logWithDate(`Creating backup from ${error.config.path}…`);
 
-        // Move backup file to a known location for a restore
-        fs.renameSync(error.config.path, realmPath + '~');
+          // Move backup file to a known location for a restore
+          fs.renameSync(error.config.path, realmPath + '~');
 
-        // Realm isn't valid anymore, notify user to exit
-        this.realm = null;
-      } else {
-        logWithDate(`Received error ${error.message}`);
+          // Realm isn't valid anymore, notify user to exit
+          this.realm = null;
+          break;
+        // TODO: Handle other cases…
+        default:
+          logWithDate(`Received error ${error.message}`);
       }
     }
   }
@@ -74,7 +81,7 @@ class RealmUtils {
 
     if ((totalBytes > tenMB) && ((usedBytes / totalBytes) < 0.75)) {
       logWithDate(`Compacting Realm…`);
-      
+
       return true;
     }
 
@@ -118,6 +125,18 @@ class RealmUtils {
     let newRealm;
 
     try {
+      const clientResetMode = manualClientReset ?
+        { mode: "manual" } :
+        {
+          mode: "discardLocal",
+          // These callbacks do nothing here, but can be used to react to a Client Reset when in .discardLocal mode
+          clientResetBefore: (before) => {
+            logWithDate(`Before a Client Reset for ${before.path})`);
+          },
+          clientResetAfter: (before, after) => {
+            logWithDate(`After a Client Reset for ${before.path} => ${after.path})`);
+          }
+        };
       const config = {
         schema: [TestDataSchema],
         shouldCompactOnLaunch: this.compactOnLaunch,
@@ -130,6 +149,7 @@ class RealmUtils {
         config.sync = {
           user: user,
           partitionValue: partitionValue,
+          clientReset: clientResetMode,
           newRealmFileBehavior: { type: 'downloadBeforeOpen', timeOutBehavior: 'throwException' },
           existingRealmFileBehavior: { type: 'openImmediately', timeOutBehavior: 'openLocalRealm' },
           error: this.errorSync,
@@ -144,6 +164,8 @@ class RealmUtils {
       if (isLocal) {
         newRealm = await new Realm(config);
       } else {
+        logWithDate(`Opening realm with "${clientResetMode.mode}" Client Reset`);
+
         newRealm = await Realm.open(config);
 
         if (newRealm) {

@@ -10,13 +10,15 @@ import UIKit
 
 // Constants
 let partitionValue	= "<Partition Value>"
-let realmFolder		= "mongodb-realm"
-let username		= ""
-let password		= ""
-let userAPIKey		= ""
-let customJWT		= ""
 let appId			= "<Realm App ID>"
-let asyncRealmNames	= "AsyncRealmNames"
+let realmFolder			= "mongodb-realm"
+let username			= ""
+let password			= ""
+let userAPIKey			= ""
+let customJWT			= ""
+let asyncRealmNames		= "AsyncRealmNames"
+
+let manualClientReset	= true	// This is the default, set to false to use .discardLocal
 
 let appConfig		= AppConfiguration(baseURL: nil, transport: nil, localAppName: nil,
              		                   localAppVersion: nil, defaultRequestTimeoutMS: 15000)
@@ -257,7 +259,22 @@ class ViewController: UIViewController {
 		}
 	}
 	
-	func realmSetupClientReset() {
+	// These callbacks do nothing here, but can be used to react to a Client Reset when in .discardLocal mode
+	func beforeClientReset(_ before: Realm) {
+		DispatchQueue.main.async { [weak self] in
+			self?.log("Before a Client Reset for \(before.configuration.fileURL!))")
+		}
+	}
+	
+	func afterClientReset(_ before: Realm, _ after: Realm) {
+		DispatchQueue.main.async { [weak self] in
+			self?.log("After a Client Reset for \(before.configuration.fileURL!)) => \(after.configuration.fileURL!))")
+		}
+	}
+
+	// General error handler: this will handle manual client reset,
+	// but is also needed if breaking changes are applied, as .discardLocal won't be enough
+	func realmSetupErrorHandler() {
 		// Don't re-do it
 		guard app.syncManager.errorHandler == nil else { return }
 		
@@ -307,9 +324,12 @@ class ViewController: UIViewController {
 	}
 	
 	fileprivate func realmSyncOpen(with user: User) {
-		let config	= user.configuration(partitionValue: partitionValue)
+		// The simplest Client Reset handling is just to use .discardLocal(), but won't handle breaking changes
+		let clientResetMode: ClientResetMode	= manualClientReset ? .manual : .discardLocal({ [weak self] before in self?.beforeClientReset(before) },
+		                                    	                                              { [weak self] before, after in self?.afterClientReset(before, after) })
+		let config	= user.configuration(partitionValue: partitionValue, clientResetMode: clientResetMode)
 		
-		realmSetupClientReset()
+		realmSetupErrorHandler()
 		
 		do {
 			realm = try Realm(configuration: config)
@@ -327,9 +347,12 @@ class ViewController: UIViewController {
 	}
 	
 	fileprivate func realmAsyncOpen(with user: User) {
-		let config	= user.configuration(partitionValue: partitionValue)
+		let clientResetMode: ClientResetMode	= manualClientReset ? .manual : .discardLocal({ [weak self] before in self?.beforeClientReset(before) },
+		                                    	                                              { [weak self] before, after in self?.afterClientReset(before, after) })
+		let config	= user.configuration(partitionValue: partitionValue, clientResetMode: clientResetMode)
 		
-		realmSetupClientReset()
+		
+		realmSetupErrorHandler()
 
 		let task	= Realm.asyncOpen(configuration: config,
 		        	                  callbackQueue: DispatchQueue.main) { [weak self] result in

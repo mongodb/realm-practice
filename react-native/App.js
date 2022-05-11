@@ -62,9 +62,12 @@ const RNApp = () => {
     setLogText((logText) => logText + `[${date.toISOString()}] - ${message}\n`);
   }
 
+	// General error handler: this will handle manual client reset,
+	// but is also needed if breaking changes are applied, as .discardLocal won't be enough
   function errorSync(session, error) {
     if (realm !== undefined) {
-      if (error.name === 'ClientReset') {
+      switch (error.name) {
+      case 'ClientReset':
         const realmPath = realm.path;
 
         realm.close();
@@ -79,7 +82,9 @@ const RNApp = () => {
 
         // Realm isn't valid anymore, notify user to exit
         realm = null;
-      } else {
+        break;
+      // TODO: Handle other cases…
+      default:
         logWithDate(`Received error ${error.message}`);
       }
     }
@@ -92,7 +97,7 @@ const RNApp = () => {
 
     if ((totalBytes > tenMB) && ((usedBytes / totalBytes) < 0.75)) {
       logWithDate(`Compacting Realm…`);
-      
+
       return true;
     }
 
@@ -136,18 +141,33 @@ const RNApp = () => {
 
   async function openRealm(user) {
     try {
+      const clientResetMode = constants.MANUAL_CLIENT_RESET ?
+        { mode: "manual" } :
+        {
+          mode: "discardLocal",
+          // These callbacks do nothing here, but can be used to react to a Client Reset when in .discardLocal mode
+          clientResetBefore: (before) => {
+            logWithDate(`Before a Client Reset for ${before.path})`);
+          },
+          clientResetAfter: (before, after) => {
+            logWithDate(`After a Client Reset for ${before.path} => ${after.path})`);
+          }
+        };
       const config = {
         schema: constants.schemaClasses,
         shouldCompactOnLaunch: compactOnLaunch,
         sync: {
           user: user,
           partitionValue: constants.partitionValue,
+          clientReset: clientResetMode,
           newRealmFileBehavior: { type: 'downloadBeforeOpen', timeOutBehavior: 'throwException' },
           existingRealmFileBehavior: { type: 'openImmediately', timeOutBehavior: 'openLocalRealm' },
           error: errorSync
         }
       };
 
+      logWithDate(`Opening realm with "${clientResetMode.mode}" Client Reset`);
+      
       realm = await Realm.open(config);
 
       logWithDate(`Opened realm ${constants.partitionValue}`);
@@ -213,7 +233,7 @@ const RNApp = () => {
     }
 
     setLogText('');
-    
+
     logWithDate('App Loaded');
 
     setupRealm();

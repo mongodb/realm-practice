@@ -14,22 +14,25 @@ let realm;
 
 function errorSync(session, error) {
   if (realm != undefined) {
-    if (error.name === 'ClientReset') {
-      const realmPath = realm.path;
+    switch (error.name) {
+      case 'ClientReset':
+        const realmPath = realm.path;
 
-      realm.close();
+        realm.close();
 
-      logWithDate(`Error ${error.message}, need to reset ${realmPath}…`);
-      Realm.App.Sync.initiateClientReset(app, realmPath);
-      logWithDate(`Creating backup from ${error.config.path}…`);
+        logWithDate(`Error ${error.message}, need to reset ${realmPath}…`);
+        Realm.App.Sync.initiateClientReset(app, realmPath);
+        logWithDate(`Creating backup from ${error.config.path}…`);
 
-      // Move backup file to a known location for a restore
-      fs.renameSync(error.config.path, realmPath + '~');
+        // Move backup file to a known location for a restore
+        fs.renameSync(error.config.path, realmPath + '~');
 
-      // Realm isn't valid anymore, notify user to exit
-      realm = null;
-    } else {
-      logWithDate(`Received error ${error.message}`);
+        // Realm isn't valid anymore, notify user to exit
+        realm = null;
+        break;
+      // TODO: Handle other cases…
+      default:
+        logWithDate(`Received error ${error.message}`);
     }
   }
 }
@@ -41,7 +44,7 @@ function compactOnLaunch(totalBytes, usedBytes) {
 
   if ((totalBytes > tenMB) && ((usedBytes / totalBytes) < 0.75)) {
     logWithDate(`Compacting Realm…`);
-    
+
     return true;
   }
 
@@ -81,12 +84,25 @@ async function restoreRealm() {
 
 async function openRealm(user) {
   try {
+    const clientResetMode = constants.manualClientReset ?
+      { mode: "manual" } :
+      {
+        mode: "discardLocal",
+        // These callbacks do nothing here, but can be used to react to a Client Reset when in .discardLocal mode
+        clientResetBefore: (before) => {
+          logWithDate(`Before a Client Reset for ${before.path})`);
+        },
+        clientResetAfter: (before, after) => {
+          logWithDate(`After a Client Reset for ${before.path} => ${after.path})`);
+        }
+      };
     const config = {
       schema: constants.schemaClasses,
       shouldCompactOnLaunch: compactOnLaunch,
       sync: {
         user: user,
         partitionValue: constants.partitionValue,
+        clientReset: clientResetMode,
         newRealmFileBehavior: { type: 'downloadBeforeOpen', timeOutBehavior: 'throwException' },
         existingRealmFileBehavior: { type: 'openImmediately', timeOutBehavior: 'openLocalRealm' },
         error: errorSync
@@ -97,6 +113,8 @@ async function openRealm(user) {
       Realm.deleteFile(config);
       logWithDate(`Cleaned realm ${constants.partitionValue}`);
     }
+
+    logWithDate(`Opening realm with "${clientResetMode.mode}" Client Reset`);
 
     realm = await Realm.open(config);
 
