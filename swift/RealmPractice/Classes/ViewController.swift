@@ -46,6 +46,7 @@ class ViewController: UIViewController {
 	var notificationToken: NotificationToken?
 	var progressToken: SyncSession.ProgressNotificationToken?
 	var progressAmount = 0
+	var loginInProgress = false
 
 	func log(_ text: String) {
 		textView.text += "[\(dateFormatter.string(from: Date()))] - \(text)\n"
@@ -101,35 +102,45 @@ class ViewController: UIViewController {
 			
 			openRealm(for: user)
 		} else {
-			let credentials: Credentials!
-			
-			if !username.isEmpty {
-				credentials	= .emailPassword(email: username, password: password)
-			} else if !userAPIKey.isEmpty {
-				credentials	= .userAPIKey(userAPIKey)
-			} else if !customJWT.isEmpty {
-				credentials	= .jwt(token: customJWT)
-			} else {
-				credentials	= .anonymous
-			}
-			
-			app.login(credentials: credentials) { [weak self] result in
-				DispatchQueue.main.async {
-					switch result {
-					case let .success(user):
-						// This is the part that reads the objects via Sync
-						self?.log("Logged in \(user.id), syncing…")
-						
-						self?.openRealm(for: user)
-					case let .failure(error):
-						self?.log("Login Error: \(error.localizedDescription)")
-					}
-				}
-			}
+			logInUser()
 		}
 	}
 	
 	// MARK: - Realm operations
+	
+	fileprivate func logInUser() {
+		guard !loginInProgress else { return }
+		
+		let credentials: Credentials!
+		
+		loginInProgress = true
+		
+		if !username.isEmpty {
+			credentials	= .emailPassword(email: username, password: password)
+		} else if !userAPIKey.isEmpty {
+			credentials	= .userAPIKey(userAPIKey)
+		} else if !customJWT.isEmpty {
+			credentials	= .jwt(token: customJWT)
+		} else {
+			credentials	= .anonymous
+		}
+		
+		app.login(credentials: credentials) { [weak self] result in
+			DispatchQueue.main.async {
+				self?.loginInProgress = false
+				
+				switch result {
+				case let .success(user):
+					// This is the part that reads the objects via Sync
+					self?.log("Logged in \(user.id), syncing…")
+					
+					self?.openRealm(for: user)
+				case let .failure(error):
+					self?.log("Login Error: \(error.localizedDescription)")
+				}
+			}
+		}
+	}
 	
 	fileprivate func logOutUser() {
 		app.currentUser?.logOut { error in
@@ -316,7 +327,17 @@ class ViewController: UIViewController {
 				}
 			case .clientUserError, .underlyingAuthError:
 				self.log("Authentication Error: \(syncError.localizedDescription)")
-				self.logOutUser()
+				DispatchQueue.main.async { [weak self] in
+					// Cleanup and force a new full login
+					self?.realmCleanup()
+					if app.currentUser != nil {
+						self?.log("Logging out…")
+						self?.logOutUser()
+					} else {
+						self?.log("Trying to login again…")
+						self?.logInUser()
+					}
+				}
 			default:
 				print("SyncManager Error: ", error.localizedDescription)
 			}
