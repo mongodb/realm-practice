@@ -27,6 +27,6 @@
     "prettier": "^2.6.2"
   },
   "dependencies": {
-    "realm": "^10.17.0"
+    "realm": "^10.21.1"
   }
 }
