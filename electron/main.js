@@ -1,6 +1,7 @@
 const Realm = require('realm');
 const { RealmUtils, realmApp, logWithDate } = require('./realmUtils');
 const { app, BrowserWindow } = require('electron');
+const mainRemote = require('@electron/remote/main');
 
 const username = '';
 const password = '';
@@ -25,6 +26,8 @@ function createWindow() {
   */
   process.stdin.resume();
 
+  mainRemote.enable(win.webContents);
+
   win.loadFile('index.html');
 }
 
@@ -32,6 +35,8 @@ app.whenReady().then(async () => {
   let user = realmApp.currentUser;
 
   try {
+    mainRemote.initialize();
+
     Realm.App.Sync.setLogger(realmApp, (level, message) => logWithDate(`(${level}) ${message}`));
     Realm.App.Sync.setLogLevel(realmApp, 'detail');
 

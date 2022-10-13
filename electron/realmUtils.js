@@ -139,7 +139,7 @@ class RealmUtils {
         };
       const config = {
         schema: [TestDataSchema],
-        shouldCompactOnLaunch: this.compactOnLaunch,
+        shouldCompactOnLaunch: this.compactOnLaunch.bind(),
       };
 
       if (isLocal) {
@@ -152,7 +152,7 @@ class RealmUtils {
           clientReset: clientResetMode,
           newRealmFileBehavior: { type: 'downloadBeforeOpen', timeOutBehavior: 'throwException' },
           existingRealmFileBehavior: { type: 'openImmediately', timeOutBehavior: 'openLocalRealm' },
-          error: this.errorSync,
+          error: this.errorSync.bind(),
         };
       }
 

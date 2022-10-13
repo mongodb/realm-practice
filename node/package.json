@@ -11,6 +11,6 @@
 	"author": "Paolo Manna",
 	"license": "MIT",
 	"dependencies": {
-		"realm": "^10.21.1"
+		"realm": "11.0.0-rc.2"
 	}
 }

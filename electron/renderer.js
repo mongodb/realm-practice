@@ -1,5 +1,5 @@
 const { RealmUtils } = require('./realmUtils');
-const { remote } = require('electron');
+const  remote = require('@electron/remote');
 
 function logOnHTML(message) {
   let date = new Date();
