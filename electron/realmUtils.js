@@ -130,16 +130,16 @@ class RealmUtils {
         {
           mode: "discardLocal",
           // These callbacks do nothing here, but can be used to react to a Client Reset when in .discardLocal mode
-          clientResetBefore: (before) => {
+          onBefore: (before) => {
             logWithDate(`Before a Client Reset for ${before.path})`);
           },
-          clientResetAfter: (before, after) => {
+          onAfter: (before, after) => {
             logWithDate(`After a Client Reset for ${before.path} => ${after.path})`);
           }
         };
       const config = {
         schema: [TestDataSchema],
-        shouldCompactOnLaunch: this.compactOnLaunch.bind(),
+        shouldCompact: this.compactOnLaunch.bind(),
       };
 
       if (isLocal) {
@@ -152,7 +152,7 @@ class RealmUtils {
           clientReset: clientResetMode,
           newRealmFileBehavior: { type: 'downloadBeforeOpen', timeOutBehavior: 'throwException' },
           existingRealmFileBehavior: { type: 'openImmediately', timeOutBehavior: 'openLocalRealm' },
-          error: this.errorSync.bind(),
+          onError: this.errorSync.bind(),
         };
       }
 
