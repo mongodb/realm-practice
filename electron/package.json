@@ -18,8 +18,8 @@
   },
   "homepage": "https://github.com/mongodb/realm-practice#readme",
   "devDependencies": {
-    "electron": "^20.3.2",
     "@electron/remote": "^2.0.8",
+    "electron": "^20.3.2",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.2.0",
@@ -28,6 +28,6 @@
     "prettier": "^2.6.2"
   },
   "dependencies": {
-    "realm": "^11.0.0"
+    "realm": "^11.1.0"
   }
 }

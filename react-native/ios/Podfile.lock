@@ -368,7 +368,7 @@ PODS:
     - React-jsi (= 0.70.3)
     - React-logger (= 0.70.3)
     - React-perflogger (= 0.70.3)
-  - RealmJS (11.0.0):
+  - RealmJS (11.1.0):
     - React
   - RNFS (2.20.0):
     - React-Core
@@ -578,7 +578,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: b9a58ffdd18446f43d493a4b0ecd603ee86be847
   React-runtimeexecutor: e9b1f9310158a1e265bcdfdfd8c62d6174b947a2
   ReactCommon: 01064177e66d652192c661de899b1076da962fd9
-  RealmJS: 55a0d0d600a0da7d5f0cf42ecbabcd09708c7601
+  RealmJS: de680a55666ee89252470f5254930a41001e43c1
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 2ed968a4f060a92834227c036279f2736de0fce3
