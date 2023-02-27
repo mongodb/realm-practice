@@ -346,8 +346,8 @@ class ViewController: UIViewController {
 	
 	fileprivate func realmSyncOpen(with user: User) {
 		// The simplest Client Reset handling is just to use .discardLocal(), but won't handle breaking changes
-		let clientResetMode: ClientResetMode	= manualClientReset ? .manual : .discardLocal({ [weak self] before in self?.beforeClientReset(before) },
-		                                    	                                              { [weak self] before, after in self?.afterClientReset(before, after) })
+		let clientResetMode: ClientResetMode	= manualClientReset ? .manual() : .discardUnsyncedChanges(beforeReset: { [weak self] before in self?.beforeClientReset(before) },
+		                                    	                                                          afterReset: { [weak self] before, after in self?.afterClientReset(before, after) })
 		let config	= user.configuration(partitionValue: partitionValue, clientResetMode: clientResetMode)
 		
 		realmSetupErrorHandler()
@@ -368,8 +368,8 @@ class ViewController: UIViewController {
 	}
 	
 	fileprivate func realmAsyncOpen(with user: User) {
-		let clientResetMode: ClientResetMode	= manualClientReset ? .manual : .discardLocal({ [weak self] before in self?.beforeClientReset(before) },
-		                                    	                                              { [weak self] before, after in self?.afterClientReset(before, after) })
+		let clientResetMode: ClientResetMode	= manualClientReset ? .manual() : .discardUnsyncedChanges(beforeReset: { [weak self] before in self?.beforeClientReset(before) },
+		                                    	                                                          afterReset: { [weak self] before, after in self?.afterClientReset(before, after) })
 		let config	= user.configuration(partitionValue: partitionValue, clientResetMode: clientResetMode)
 		
 		
