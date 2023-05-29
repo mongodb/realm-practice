@@ -18,7 +18,7 @@ let userAPIKey			= ""
 let customJWT			= ""
 let asyncRealmNames		= "AsyncRealmNames"
 
-let manualClientReset	= true	// This is the default, set to false to use .discardLocal
+let manualClientReset	= false	// Set to true to use, will use .recoverOrDiscardUnsyncedChanges as default
 
 let appConfig		= AppConfiguration(baseURL: nil, transport: nil, localAppName: nil,
              		                   localAppVersion: nil, defaultRequestTimeoutMS: 15000)
@@ -89,12 +89,12 @@ class ViewController: UIViewController {
 		log("Application started")
 		
 		// Set these and logLevel to .trace to identify issues in the Sync process
-//		Logger.analyseTrace		= true
-//		Logger.callback			= log(_:)
+//		FileLogger.analyseTrace		= true
+//		FileLogger.callback			= log(_:)
 
-		app.syncManager.logLevel	= .detail
-		app.syncManager.logger		= { level, message in
-			Logger.log(level: level.rawValue, message: message)
+		// New Logger class
+		Logger.shared = Logger(level: .detail) { level, message in
+			FileLogger.log(level: level.rawValue, message: message)
 		}
 
 		if let user = app.currentUser {
@@ -270,7 +270,7 @@ class ViewController: UIViewController {
 		}
 	}
 	
-	// These callbacks do nothing here, but can be used to react to a Client Reset when in .discardLocal mode
+	// These callbacks do nothing here, but can be used to react to a Client Reset when in .recoverOrDiscardUnsyncedChanges mode
 	func beforeClientReset(_ before: Realm) {
 		DispatchQueue.main.async { [weak self] in
 			self?.log("Before a Client Reset for \(before.configuration.fileURL!))")
@@ -284,7 +284,7 @@ class ViewController: UIViewController {
 	}
 
 	// General error handler: this will handle manual client reset,
-	// but is also needed if breaking changes are applied, as .discardLocal won't be enough
+	// but is also needed if breaking changes are applied, as .recoverOrDiscardUnsyncedChanges won't be enough
 	func realmSetupErrorHandler() {
 		// Don't re-do it
 		guard app.syncManager.errorHandler == nil else { return }
@@ -345,11 +345,17 @@ class ViewController: UIViewController {
 	}
 	
 	fileprivate func realmSyncOpen(with user: User) {
-		// The simplest Client Reset handling is just to use .discardLocal(), but won't handle breaking changes
-		let clientResetMode: ClientResetMode	= manualClientReset ? .manual() : .discardUnsyncedChanges(beforeReset: { [weak self] before in self?.beforeClientReset(before) },
-		                                    	                                                          afterReset: { [weak self] before, after in self?.afterClientReset(before, after) })
+		// The simplest Client Reset handling is just to use .recoverUnsyncedChanges(), but won't handle breaking changes
+		let clientResetMode: ClientResetMode	= manualClientReset ? .manual(errorHandler: nil) : .recoverOrDiscardUnsyncedChanges(
+			beforeReset: { [weak self] before in
+				self?.beforeClientReset(before)
+			},
+			afterReset: { [weak self] before, after in
+				self?.afterClientReset(before, after)
+			})
 		let config	= user.configuration(partitionValue: partitionValue, clientResetMode: clientResetMode)
-		
+//		let config	= user.configuration(partitionValue: partitionValue, cancelAsyncOpenOnNonFatalErrors: true)
+
 		realmSetupErrorHandler()
 		
 		do {
@@ -368,10 +374,17 @@ class ViewController: UIViewController {
 	}
 	
 	fileprivate func realmAsyncOpen(with user: User) {
-		let clientResetMode: ClientResetMode	= manualClientReset ? .manual() : .discardUnsyncedChanges(beforeReset: { [weak self] before in self?.beforeClientReset(before) },
-		                                    	                                                          afterReset: { [weak self] before, after in self?.afterClientReset(before, after) })
+		let clientResetMode: ClientResetMode	= manualClientReset ? .manual(errorHandler: nil) : .recoverOrDiscardUnsyncedChanges(
+			beforeReset: { [weak self] before in
+				self?.beforeClientReset(before)
+			},
+			afterReset: { [weak self] before, after in
+				self?.afterClientReset(before, after)
+			})
 		let config	= user.configuration(partitionValue: partitionValue, clientResetMode: clientResetMode)
 		
+		// This would be useful, but flag is read-only…
+//		config.syncConfiguration?.cancelAsyncOpenOnNonFatalErrors	= true
 		
 		realmSetupErrorHandler()
 

@@ -1,5 +1,5 @@
 //
-//  Logger.swift
+//  FileLogger.swift
 //
 //  Created by Paolo Manna on 23/02/2021.
 //  Adapted from https://stackoverflow.com/a/58697135
@@ -13,7 +13,7 @@ let knownCommands: Set<String>	= ["AddColumn", "AddInteger", "AddTable",
                               	   "EraseColumn", "EraseObject", "EraseTable", "InternStrings",
                               	   "SelectField", "SelectTable", "Set", "Update"]
 
-enum Logger {
+enum FileLogger {
 	static let formatter = ISO8601DateFormatter()
 	static var analyseTrace = false
 	static var verbose = false
